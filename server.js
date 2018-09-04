@@ -17,6 +17,7 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
     res.header('Access-Control-Allow-Credentials', true);
     res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
 
     next();
 });
@@ -63,6 +64,25 @@ app.get('/waypoints', (req, res) => {
     }
 });
 
+app.get('/waypoints/:waypoint', (req, res) => {
+    if (!fs.existsSync(filePath + '/' + waypointsFileName)) {
+        res.status(404).send('Not found');
+
+        return;
+    }
+
+    const waypoints = JSON.parse(fs.readFileSync(filePath + '/' + waypointsFileName));
+    const waypoint = waypoints.find((waypoint) => waypoint.id === req.params['waypoint']);
+
+    if (!waypoint) {
+        res.status(404).send('Not found');
+
+        return;
+    }
+
+    res.contentType('application/json').status(200).send(JSON.stringify(waypoint));
+});
+
 app.post('/waypoints', (req, res) => {
     if (fs.existsSync(filePath + '/' + waypointsFileName)) {
         const waypoints = JSON.parse(fs.readFileSync(filePath + '/' + waypointsFileName));
@@ -72,12 +92,46 @@ app.post('/waypoints', (req, res) => {
     res.contentType('application/json').status(201).send();
 });
 
-app.put('/waypoints', (req, res) => {
+app.put('/waypoints/:waypoint', (req, res) => {
+    if (!fs.existsSync(filePath + '/' + waypointsFileName)) {
+        res.status(404).send('Not found');
 
+        return;
+    }
+
+    const waypoints = JSON.parse(fs.readFileSync(filePath + '/' + waypointsFileName));
+    const waypoint = waypoints.find((waypoint) => waypoint.id === req.params['waypoint']);
+
+    if (!waypoint) {
+        res.status(404).send('Not found');
+
+        return;
+    }
+
+    waypoint.id = req.body.id;
+    waypoint.name = req.body.name;
+    waypoint.description = req.body.description;
+    waypoint.lat = req.body.lat;
+    waypoint.lng = req.body.lng;
+
+    fs.writeFileSync(filePath + '/' + waypointsFileName, JSON.stringify(waypoints));
+
+    res.status(202).send();
 });
 
-app.delete('/waypoints', (req, res) => {
+app.delete('/waypoints/:waypoint', (req, res) => {
+    if (!fs.existsSync(filePath + '/' + waypointsFileName)) {
+        res.status(404).send('Not found');
 
+        return;
+    }
+
+    let waypoints = JSON.parse(fs.readFileSync(filePath + '/' + waypointsFileName));
+    waypoints = waypoints.filter((waypoint) => waypoint.id !== req.params['waypoint']);
+
+    fs.writeFileSync(filePath + '/' + waypointsFileName, JSON.stringify(waypoints));
+
+    res.status(204).send();
 });
 
 

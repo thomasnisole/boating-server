@@ -55,7 +55,7 @@ export class NmeaServer {
         this.port.pipe(this.parser);
 
         this.parser.on('data', (line: string) => {
-            this.onData.emit()
+            this.onData.emit(line);
         });
 
         this.port.on('close', () => {
