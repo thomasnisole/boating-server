@@ -160,8 +160,8 @@ io.on('connect', (socket) => {
             }
 
             parser.on('data', (line) => {
-                //socket.emit('data', line);
-                socket.emit('data', '$GPRMC,170727.683,A,4835.1100,N,00159.8096,W,002.3,314.8,060918,,,A*7C');
+                socket.emit('data', line);
+                //socket.emit('data', '$GPRMC,170727.683,A,4835.1100,N,00159.8096,W,002.3,314.8,060918,,,A*7C');
             });
 
             fn();
@@ -183,7 +183,7 @@ io.on('connect', (socket) => {
             parser.on('data', (line) => {
                 console.log(line);
                 // fs.appendFileSync('C:/tmp/trace.nmea', line.toString() + '\r\n');
-                socket.emit('data', '$GPRMC,170727.683,A,4835.1100,N,00159.8096,W,002.3,314.8,060918,,,A*7C');
+                socket.emit('data', line);
             });
 
             port.on('close', (a) => {
