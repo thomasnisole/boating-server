@@ -192,6 +192,7 @@ io.on('connect', (socket) => {
                 // fs.appendFileSync('C:/tmp/trace.nmea', line.toString() + '\r\n');
                 const packet = nmea.parseNmeaSentence(line);
                 console.log(line);
+                io.emit('/nmea/ALL', line);
                 io.emit('/nmea/' + packet.talkerId + packet.sentenceId, line);
                 /// socket.emit('data', '$GPRMC,170727.683,A,4835.1100,N,00159.8096,W,002.3,314.8,060918,,,A*7C');
             });
