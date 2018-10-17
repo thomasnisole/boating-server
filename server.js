@@ -11,6 +11,7 @@ const io = require('socket.io')(server);
 
 const os = require('os');
 const fs = require('fs');
+const nmea = require('nmea-simple');
 
 app.use(bodyParser.json());
 app.use((req, res, next) => {
@@ -147,23 +148,18 @@ io.on('connect', (socket) => {
     console.log('a user connected');
 
     socket.on('close', () => {
-       port.close();
-       port = null;
-       parser = null;
-       connected = false;
+        port.close();
+        port = null;
+        parser = null;
+        connected = false;
     });
 
-    socket.on('open', (message, fn) => {
+    socket.on('openPort', (message, fn) => {
+        console.log(message);
         if (parser && port && connected) {
             if (message.port !== port.path) {
                 fn('A different port is already opened');
             }
-
-            parser.on('data', (line) => {
-                socket.emit('data', line);
-                //socket.emit('data', '$GPRMC,170727.683,A,4835.1100,N,00159.8096,W,002.3,314.8,060918,,,A*7C');
-            });
-
             fn();
         } else {
             parser = new parsers.Readline({
@@ -172,36 +168,37 @@ io.on('connect', (socket) => {
             port = new SerialPort(
                 message.port,
                 {
-                    autoOpen: false,
+                    // autoOpen: false,
                     baudRate: message.baudRate,
                     lock: false
+                },
+                (err) => {
+                    if (err) {
+                        port = null;
+                        parser = null;
+
+                        fn(err.toString());
+                    } else {
+                        console.log('connected', message.port);
+                        connected = true;
+                        fn();
+                    }
                 }
             );
 
             port.pipe(parser);
 
             parser.on('data', (line) => {
-                console.log(line);
                 // fs.appendFileSync('C:/tmp/trace.nmea', line.toString() + '\r\n');
-                socket.emit('data', line);
+                const packet = nmea.parseNmeaSentence(line);
+                console.log(line);
+                io.emit('/nmea/' + packet.talkerId + packet.sentenceId, line);
+                /// socket.emit('data', '$GPRMC,170727.683,A,4835.1100,N,00159.8096,W,002.3,314.8,060918,,,A*7C');
             });
 
-            port.on('close', (a) => {
-                socket.emit('close');
+            port.on('close', () => {
+                socket.emit('closePort');
                 connected = false;
-            });
-
-            port.open((err) => {
-                if (err) {
-                    port = null;
-                    parser = null;
-
-                    fn(err.toString());
-                } else {
-                    console.log('connected', message.port);
-                    connected = true;
-                    fn();
-                }
             });
         }
     });

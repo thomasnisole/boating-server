@@ -11,14 +11,15 @@
     "prod": "npm run build && npm run start"
   },
   "dependencies": {
+    "@types/express": "^4.11.1",
     "body-parser": "^1.18.3",
     "cors": "^2.8.4",
     "express": "^4.16.3",
-    "serialport": "^6.2.1",
-    "socket.io": "^2.1.1",
-    "@types/express": "^4.11.1",
     "mongoose": "^5.0.14",
-    "nodemon": "^1.17.3"
+    "nmea-simple": "^2.3.0",
+    "nodemon": "^1.17.3",
+    "serialport": "^6.2.1",
+    "socket.io": "^2.1.1"
   },
   "devDependencies": {}
 }
